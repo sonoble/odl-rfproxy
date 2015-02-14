@@ -8,13 +8,15 @@ import org.opendaylight.controller.rfproxy.IPC.Tools.OptionType;
 
 import org.opendaylight.controller.sal.match.Match;
 import org.opendaylight.controller.sal.match.MatchType;
-import org.opendaylight.controller.sal.action.*;
-import org.opendaylight.controller.sal.core.Node;
 import org.opendaylight.controller.sal.core.NodeConnector;
 import org.opendaylight.controller.sal.utils.NodeCreator;
 import org.opendaylight.controller.sal.utils.NodeConnectorCreator;
 import org.opendaylight.controller.sal.utils.EtherTypes;
-import org.opendaylight.controller.sal.utils.IPProtocols;
+import org.opendaylight.controller.sal.action.SetDlDst;
+import org.opendaylight.controller.sal.action.SetDlSrc;
+import org.opendaylight.controller.sal.action.Output;
+
+import org.opendaylight.controller.sal.action.Action;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -36,7 +38,7 @@ public class RouteMod extends IPCMessage implements fields, messagesTypes {
 
     public RouteMod(){}
 
-    public RouteMod(int m, long mod_id, List<Action> acts, 
+    public RouteMod(int m, long mod_id, List<Action> acts,
                             Match mtchs, List<Option> opts){
         this.set_mod(m);
         this.set_id(mod_id);
@@ -118,7 +120,7 @@ public class RouteMod extends IPCMessage implements fields, messagesTypes {
             db_to_option(obj);
 
         aux = (List<DBObject>) content.get("matches");
-        
+
         for(DBObject obj : aux)
             db_to_matchEntry(obj);
     }
@@ -131,17 +133,12 @@ public class RouteMod extends IPCMessage implements fields, messagesTypes {
 
             byte[] value = (byte[]) o.get("value");
             byte[] ipvalue = new byte[4];
-            byte[] mask = new byte[4];
 
             for(int i=0; i < 4; i++)
                 ipvalue[i] = value[i];
 
-            for(int j=0; j < 4; j++)
-                mask[j] = value[j+4];
-
             try{
-                this.match.setField(MatchType.NW_DST, InetAddress.getByAddress(ipvalue), 
-                    InetAddress.getByAddress(mask));
+                this.match.setField(MatchType.NW_DST, InetAddress.getByAddress(ipvalue));
                 this.match.setField(MatchType.DL_TYPE, EtherTypes.IPv4.shortValue());
             }
             catch(UnknownHostException e){
@@ -186,12 +183,12 @@ public class RouteMod extends IPCMessage implements fields, messagesTypes {
 
             this.match.setField(MatchType.TP_DST, port);
         }
-        else if(type == 254){ //Match incoming port      
+        else if(type == 254){ //Match incoming port
             short port = new BigInteger(((byte[]) o.get("value"))).shortValue();
 
             NodeConnector nc = NodeConnectorCreator.createOFNodeConnector(port, NodeCreator.createOFNode(this.get_id()));
 
-            this.match.setField(MatchType.IN_PORT, nc);            
+            this.match.setField(MatchType.IN_PORT, nc);
         }
     }
 
@@ -230,7 +227,7 @@ public class RouteMod extends IPCMessage implements fields, messagesTypes {
         else if(type == OptionType.RFOT_HARD_TIMEOUT)
             this.options.add(new Option(OptionType.RFOT_HARD_TIMEOUT, val));
 
-    }  
+    }
 
     public int get_type() {
         return messagesTypes.RouteMod;

@@ -1,9 +1,7 @@
 package org.opendaylight.controller.rfproxy.internal;
 
 import java.util.Dictionary;
-import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Set;
 
 import org.opendaylight.controller.sal.core.ComponentActivatorAbstractBase;
 
@@ -14,8 +12,6 @@ import org.opendaylight.controller.sal.packet.IDataPacketService;
 import org.opendaylight.controller.sal.packet.IListenDataPacket;
 
 import org.opendaylight.controller.sal.flowprogrammer.IFlowProgrammerService;
-
-import org.opendaylight.controller.bgpsec.IBGPSecHandler;
 
 import org.apache.felix.dm.Component;
 import org.slf4j.Logger;
@@ -37,7 +33,7 @@ public class Activator extends ComponentActivatorAbstractBase {
         Object[] res = { RFProxy.class };
         return res;
     }
-    
+
     /**
      * Function that is called when configuration of the dependencies
      * is required.
@@ -54,7 +50,7 @@ public class Activator extends ComponentActivatorAbstractBase {
     public void configureInstance(Component c, Object imp, String containerName) {
         if (imp.equals(RFProxy.class)) {
 
-            //Name is required to register IListenDataPacket.class 
+            //Name is required to register IListenDataPacket.class
             Dictionary<String, Object> props = new Hashtable<String, Object>();
             props.put("salListenerName", "rfproxy");
             props.put("salListenerDependency", "bgpsec");
@@ -64,11 +60,6 @@ public class Activator extends ComponentActivatorAbstractBase {
                                 IListenDataPacket.class.getName() }, props);
 
             //Create container dependencies
-            c.add(createContainerServiceDependency(containerName).
-                    setService(IBGPSecHandler.class).
-                    setCallbacks("setBGPSecHandler", "unsetBGPSecHandler").
-                    setRequired(true));
-
             c.add(createContainerServiceDependency(containerName).
                     setService(IFlowProgrammerService.class).
                     setCallbacks("setFlowProgrammerService", "unsetFlowProgrammerService").
@@ -83,7 +74,7 @@ public class Activator extends ComponentActivatorAbstractBase {
                     setService(IDataPacketService.class).
                     setCallbacks("setDataPacketService", "unsetDataPacketService").
                     setRequired(true));
-            
+
         }
     }
 }
